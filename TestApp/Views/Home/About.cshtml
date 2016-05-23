@@ -1,0 +1,25 @@
+﻿@using System.Security.Claims
+@{
+    ViewData["Title"] = "About";
+}
+<h2>@ViewData["Title"].</h2>
+<h3>@ViewData["Message"]</h3>
+
+<p>Use this area to provide additional information.</p>
+
+<table class="table-hover claim-table">
+    <tr>
+        <th class="claim-type claim-data claim-head">Claim Type</th>
+        <th class="claim-data claim-head">Claim Value</th>
+    </tr>
+
+    @foreach (Claim claim in User.Claims)
+    {
+        <tr>
+            <td class="claim-type claim-data">@claim.Type</td>
+            <td class="claim-data">@claim.Value</td>
+        </tr>
+    }
+</table>
+
+<p>Values: @ViewData["Values"]</p>
