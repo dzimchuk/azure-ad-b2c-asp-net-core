@@ -11,13 +11,7 @@ namespace TestApp.Proxy
     {
         private readonly B2CAuthenticationOptions authOptions;
         private readonly TestServiceOptions serviceOptions;
-
-        static TestServiceProxy()
-        {
-            System.Net.ServicePointManager.ServerCertificateValidationCallback +=
-                (o, certificate, chain, errors) => true;
-        }
-
+        
         public TestServiceProxy(IOptions<B2CAuthenticationOptions> authOptions, IOptions<TestServiceOptions> serviceOptions)
         {
             this.authOptions = authOptions.Value;

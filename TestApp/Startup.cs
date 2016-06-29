@@ -88,7 +88,7 @@ namespace TestApp
                                                new[] { b2cPolicies.Value.SignInPolicy, b2cPolicies.Value.SignUpPolicy, b2cPolicies.Value.EditProfilePolicy }),
                                            Events = CreateOpenIdConnectEventHandlers(authOptions.Value, b2cPolicies.Value),
 
-                                           ResponseType = OpenIdConnectResponseTypes.CodeIdToken,
+                                           ResponseType = OpenIdConnectResponseType.CodeIdToken,
                                            TokenValidationParameters = new TokenValidationParameters
                                                                        {
                                                                            NameClaimType = "name"
