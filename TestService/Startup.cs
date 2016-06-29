@@ -50,7 +50,7 @@ namespace TestService
                                                AutomaticAuthenticate = true,
                                                AutomaticChallenge = true,
 
-                                               MetadataAddress = $"{authOptions.Value.Authority}/.well-known/openid-configuration?p={authOptions.Value.SignInPolicy}",
+                                               MetadataAddress = $"{authOptions.Value.Authority}/.well-known/openid-configuration?p={authOptions.Value.SignInOrSignUpPolicy}",
                                                Audience = authOptions.Value.Audience,
 
                                                Events = new JwtBearerEvents

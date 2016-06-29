@@ -1,8 +1,6 @@
-﻿using Microsoft.Extensions.Options;
-
-namespace TestService
+﻿namespace TestService
 {
-    public class AuthenticationOptions : IOptions<AuthenticationOptions>
+    public class AuthenticationOptions
     {
         public string Instance { get; set; }
         public string TenantId { get; set; }
@@ -10,8 +8,6 @@ namespace TestService
         public string Authority => $"{Instance}{TenantId}/v2.0";
 
         public string Audience { get; set; }
-        public string SignInPolicy { get; set; }
-
-        public AuthenticationOptions Value => this;
+        public string SignInOrSignUpPolicy { get; set; }
     }
 }

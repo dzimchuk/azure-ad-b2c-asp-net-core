@@ -85,7 +85,7 @@ namespace TestApp
                                            PostLogoutRedirectUri = authOptions.Value.PostLogoutRedirectUri,
 
                                            ConfigurationManager = new PolicyConfigurationManager(authOptions.Value.Authority, 
-                                               new[] { b2cPolicies.Value.SignInPolicy, b2cPolicies.Value.SignUpPolicy, b2cPolicies.Value.EditProfilePolicy }),
+                                               new[] { b2cPolicies.Value.SignInOrSignUpPolicy, b2cPolicies.Value.EditProfilePolicy }),
                                            Events = CreateOpenIdConnectEventHandlers(authOptions.Value, b2cPolicies.Value),
 
                                            ResponseType = OpenIdConnectResponseType.CodeIdToken,
@@ -113,8 +113,8 @@ namespace TestApp
         {
             return new OpenIdConnectEvents
             {
-                OnRedirectToIdentityProvider = context => SetIssuerAddressAsync(context, policies.SignInPolicy),
-                OnRedirectToIdentityProviderForSignOut = context => SetIssuerAddressForSignOutAsync(context, policies.SignInPolicy),
+                OnRedirectToIdentityProvider = context => SetIssuerAddressAsync(context, policies.SignInOrSignUpPolicy),
+                OnRedirectToIdentityProviderForSignOut = context => SetIssuerAddressForSignOutAsync(context, policies.SignInOrSignUpPolicy),
                 OnAuthorizationCodeReceived = async context =>
                                               {
                                                   var credential = new ClientCredential(authOptions.ClientId, authOptions.ClientSecret);
@@ -122,6 +122,7 @@ namespace TestApp
                                                   var result = await authenticationContext.AcquireTokenByAuthorizationCodeAsync(context.TokenEndpointRequest.Code,
                                                       new Uri(context.TokenEndpointRequest.RedirectUri, UriKind.RelativeOrAbsolute), credential,
                                                       new[] { authOptions.ClientId }, context.Ticket.Principal.FindFirst(Constants.AcrClaimType).Value);
+
                                                   context.HandleCodeRedemption();
                                               },
                 OnAuthenticationFailed = context =>

@@ -22,22 +22,7 @@ namespace TestApp.Controllers
             {
                 return new ChallengeResult(
                     Constants.OpenIdConnectAuthenticationScheme,
-                    new AuthenticationProperties(new Dictionary<string, string> { { Constants.B2CPolicy, policies.SignInPolicy } })
-                    {
-                        RedirectUri = "/"
-                    });
-            }
-
-            return RedirectHome();
-        }
-
-        public IActionResult SignUp()
-        {
-            if (!User.Identity.IsAuthenticated)
-            {
-                return new ChallengeResult(
-                    Constants.OpenIdConnectAuthenticationScheme,
-                    new AuthenticationProperties(new Dictionary<string, string> { { Constants.B2CPolicy, policies.SignUpPolicy } })
+                    new AuthenticationProperties(new Dictionary<string, string> { { Constants.B2CPolicy, policies.SignInOrSignUpPolicy } })
                     {
                         RedirectUri = "/"
                     });

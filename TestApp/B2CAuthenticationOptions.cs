@@ -1,8 +1,6 @@
-﻿using Microsoft.Extensions.Options;
-
-namespace TestApp
+﻿namespace TestApp
 {
-    public class B2CAuthenticationOptions : IOptions<B2CAuthenticationOptions>
+    public class B2CAuthenticationOptions
     {
         public string Instance { get; set; }
         public string TenantId { get; set; }
@@ -13,7 +11,5 @@ namespace TestApp
         public string ClientSecret { get; set; }
 
         public string PostLogoutRedirectUri { get; set; }
-        
-        public B2CAuthenticationOptions Value => this;
     }
 }
