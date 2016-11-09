@@ -19,8 +19,7 @@ A sample demonstrating how you can configure your ASP.NET Core applications to t
       "ClientSecret": "",
       "PostLogoutRedirectUri": "https://localhost:44397/",
       "B2C": {
-        "SignInPolicy": "e.g B2C_1_TestSignInPolicy",
-        "SignUpPolicy": "e.g B2C_1_TestSignUpPolicy",
+        "SignInOrSignUpPolicy": "e.g B2C_1_TestSignUpAndSignInPolicy",
         "EditProfilePolicy": "e.g B2C_1_TestProfileEditPolicy"
       }
     }
@@ -38,7 +37,7 @@ A sample demonstrating how you can configure your ASP.NET Core applications to t
       "Instance": "e.g. https://login.microsoftonline.com/",
       "TenantId": "e.g. <your domain>.onmicrosoft.com>",
       "Audience": "Use client Id of the common app",
-      "SignInPolicy": "e.g B2C_1_TestSignInPolicy"
+      "SignInOrSignUpPolicy": "e.g B2C_1_TestSignUpAndSignInPolicy"
     }
   }
 ```
