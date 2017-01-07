@@ -6,6 +6,9 @@ A sample demonstrating how you can configure your ASP.NET Core applications to t
 - Redeem authorization code
 - Call a protected Web API
 
+Please find more information in this walk-through post:
+[Setting up your ASP.NET Core apps and services for Azure AD B2C](https://dzimchuk.net/setting-up-your-aspnet-core-apps-and-services-for-azure-ad-b2c/)
+
 # Configuration
 
 ## Web App
