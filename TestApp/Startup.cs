@@ -130,6 +130,19 @@ namespace TestApp
                     context.HandleResponse();
                     context.Response.Redirect("/home/error");
                     return Task.FromResult(0);
+                },
+                OnMessageReceived = context =>
+                {
+                    if (!string.IsNullOrEmpty(context.ProtocolMessage.Error) &&
+                        !string.IsNullOrEmpty(context.ProtocolMessage.ErrorDescription) &&
+                        context.ProtocolMessage.ErrorDescription.StartsWith("AADB2C90091") &&
+                        context.Properties.Items[Constants.B2CPolicy] == policies.EditProfilePolicy)
+                    {
+                        context.Ticket = new Microsoft.AspNetCore.Authentication.AuthenticationTicket(context.HttpContext.User, context.Properties, Constants.OpenIdConnectAuthenticationScheme);
+                        context.HandleResponse();
+                    }
+
+                    return Task.FromResult(0);
                 }
             };
         }

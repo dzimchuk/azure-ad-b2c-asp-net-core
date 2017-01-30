@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using TestApp.Infrastructure;
+using Microsoft.AspNetCore.Http.Features.Authentication;
 
 namespace TestApp.Controllers
 {
@@ -35,12 +37,12 @@ namespace TestApp.Controllers
         {
             if (User.Identity.IsAuthenticated)
             {
-                return new ChallengeResult(
+                return new CustomChallengeResult(
                     Constants.OpenIdConnectAuthenticationScheme,
                     new AuthenticationProperties(new Dictionary<string, string> { { Constants.B2CPolicy, policies.EditProfilePolicy } })
                     {
                         RedirectUri = "/"
-                    });
+                    }, ChallengeBehavior.Unauthorized);
             }
 
             return RedirectHome();
