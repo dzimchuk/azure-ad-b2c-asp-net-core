@@ -47,7 +47,7 @@ namespace TestApp
             services.AddTransient<TestServiceProxy>();
 
             // Add framework services.
-            services.AddMvc();
+            services.AddMvc(options => options.Filters.Add(typeof(ReauthenticationRequiredFilter)));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
