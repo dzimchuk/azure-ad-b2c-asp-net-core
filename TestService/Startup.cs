@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace TestService
@@ -21,8 +19,8 @@ namespace TestService
         {
             services.Configure<AuthenticationOptions>(configuration.GetSection("Authentication:AzureAd"));
 
-            var provider = services.BuildServiceProvider();
-            var authOptions = provider.GetService<IOptions<AuthenticationOptions>>();
+            var serviceProvider = services.BuildServiceProvider();
+            var authOptions = serviceProvider.GetService<IOptions<AuthenticationOptions>>();
             
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme) // sets both authenticate and challenge default schemes
                 .AddJwtBearer(options =>
@@ -34,8 +32,7 @@ namespace TestService
             services.AddMvc();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory,
-            IOptions<AuthenticationOptions> authOptions)
+        public void Configure(IApplicationBuilder app)
         {
             app.UseAuthentication();
             app.UseMvc();

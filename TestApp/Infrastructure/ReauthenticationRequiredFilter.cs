@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Http.Authentication;
-using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Options;
 using System;
@@ -20,12 +20,12 @@ namespace TestApp.Infrastructure
         {
             if (!context.ExceptionHandled && IsReauthenticationRequired(context.Exception))
             {
-                context.Result = new CustomChallengeResult(
+                context.Result = new ChallengeResult(
                         Constants.OpenIdConnectAuthenticationScheme,
                         new AuthenticationProperties(new Dictionary<string, string> { { Constants.B2CPolicy, policies.SignInOrSignUpPolicy } })
                         {
                             RedirectUri = context.HttpContext.Request.Path
-                        }, ChallengeBehavior.Unauthorized);
+                        });
 
                 context.ExceptionHandled = true;
             }
