@@ -2,9 +2,7 @@ using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Microsoft.Experimental.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Extensions.Options;
-using TestApp.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication;
 
@@ -36,20 +34,5 @@ namespace TestApp.Proxy
         {
             return httpContextAccessor.HttpContext.GetTokenAsync("access_token");
         }
-
-        //private async Task<string> GetAccessTokenAsync()
-        //{
-        //    try
-        //    {
-        //        var credential = new ClientCredential(authOptions.ClientId, authOptions.ClientSecret);
-        //        var authenticationContext = new AuthenticationContext(authOptions.Authority);
-        //        var result = await authenticationContext.AcquireTokenSilentAsync(new[] { authOptions.ClientId }, credential, UserIdentifier.AnyUser);
-        //        return result.Token;
-        //    }
-        //    catch (AdalSilentTokenAcquisitionException)
-        //    {
-        //        throw new ReauthenticationRequiredException();
-        //    }
-        //}
     }
 }

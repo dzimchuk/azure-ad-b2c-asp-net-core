@@ -1,11 +1,9 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Experimental.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -39,6 +37,8 @@ namespace TestApp
 
             services.AddMvc(options => options.Filters.Add(typeof(ReauthenticationRequiredFilter)));
 
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
             ConfigureAuthentication(services);
         }
 
@@ -48,9 +48,7 @@ namespace TestApp
 
             var authOptions = serviceProvider.GetService<IOptions<B2CAuthenticationOptions>>();
             var b2cPolicies = serviceProvider.GetService<IOptions<B2CPolicies>>();
-
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-
+            
             services.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -75,7 +73,7 @@ namespace TestApp
                     NameClaimType = "name"
                 };
 
-                // it will fall back to DefaultSignInScheme if not set
+                // it will fall back on using DefaultSignInScheme if not set
                 //options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 
                 options.Scope.Add("offline_access");
@@ -129,23 +127,6 @@ namespace TestApp
                                                    }
                                                },
                 OnRedirectToIdentityProviderForSignOut = context => SetIssuerAddressForSignOutAsync(context, policies.SignInOrSignUpPolicy),
-                //OnAuthorizationCodeReceived = async context =>
-                //                              {
-                //                                  try
-                //                                  {
-                //                                      var credential = new ClientCredential(authOptions.ClientId, authOptions.ClientSecret);
-                //                                      var authenticationContext = new AuthenticationContext(authOptions.Authority);
-                //                                      var result = await authenticationContext.AcquireTokenByAuthorizationCodeAsync(context.TokenEndpointRequest.Code,
-                //                                          new Uri(context.TokenEndpointRequest.RedirectUri, UriKind.RelativeOrAbsolute), credential,
-                //                                          new[] { authOptions.ClientId }, context.Principal.Claims.First(claim => claim.Type == Constants.AcrClaimType).Value);
-                                                      
-                //                                      context.HandleCodeRedemption(result.Token, result.Token);
-                //                                  }
-                //                                  catch
-                //                                  {
-                //                                      context.HandleResponse();
-                //                                  }
-                //                              },
                 OnAuthenticationFailed = context =>
                 {
                     context.Fail(context.Exception);
