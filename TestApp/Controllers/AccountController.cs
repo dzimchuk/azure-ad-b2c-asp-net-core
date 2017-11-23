@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using TestApp.Infrastructure;
-using Microsoft.AspNetCore.Http.Features.Authentication;
 
 namespace TestApp.Controllers
 {
@@ -37,12 +35,12 @@ namespace TestApp.Controllers
         {
             if (User.Identity.IsAuthenticated)
             {
-                return new CustomChallengeResult(
+                return new ChallengeResult(
                     Constants.OpenIdConnectAuthenticationScheme,
                     new AuthenticationProperties(new Dictionary<string, string> { { Constants.B2CPolicy, policies.EditProfilePolicy } })
                     {
                         RedirectUri = "/"
-                    }, ChallengeBehavior.Unauthorized);
+                    });
             }
 
             return RedirectHome();
@@ -52,10 +50,10 @@ namespace TestApp.Controllers
         {
             if (User.Identity.IsAuthenticated)
             {
-                await HttpContext.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
                 var callbackUrl = Url.Action("SignOutCallback", "Account", values: null, protocol: Request.Scheme);
-                await HttpContext.Authentication.SignOutAsync(Constants.OpenIdConnectAuthenticationScheme,
+                await HttpContext.SignOutAsync(Constants.OpenIdConnectAuthenticationScheme,
                     new AuthenticationProperties(new Dictionary<string, string> { { Constants.B2CPolicy, User.FindFirst(Constants.AcrClaimType).Value } })
                     {
                         RedirectUri = callbackUrl
