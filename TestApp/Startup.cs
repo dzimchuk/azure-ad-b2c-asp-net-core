@@ -1,14 +1,13 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Experimental.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using TestApp.Infrastructure;
@@ -17,6 +16,8 @@ using System.Linq;
 using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Distributed;
+using System;
 
 namespace TestApp
 {
@@ -39,6 +40,9 @@ namespace TestApp
 
             services.AddMvc(options => options.Filters.Add(typeof(ReauthenticationRequiredFilter)));
 
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddDistributedMemoryCache();
+
             ConfigureAuthentication(services);
         }
 
@@ -49,7 +53,7 @@ namespace TestApp
             var authOptions = serviceProvider.GetService<IOptions<B2CAuthenticationOptions>>();
             var b2cPolicies = serviceProvider.GetService<IOptions<B2CPolicies>>();
 
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            var distributedCache = serviceProvider.GetService<IDistributedCache>();
 
             services.AddAuthentication(options =>
             {
@@ -67,7 +71,7 @@ namespace TestApp
                 options.ConfigurationManager = new PolicyConfigurationManager(authOptions.Value.Authority,
                                                new[] { b2cPolicies.Value.SignInOrSignUpPolicy, b2cPolicies.Value.EditProfilePolicy });
 
-                options.Events = CreateOpenIdConnectEventHandlers(authOptions.Value, b2cPolicies.Value);
+                options.Events = CreateOpenIdConnectEventHandlers(authOptions.Value, b2cPolicies.Value, distributedCache);
 
                 options.ResponseType = OpenIdConnectResponseType.CodeIdToken;
                 options.TokenValidationParameters = new TokenValidationParameters
@@ -78,9 +82,10 @@ namespace TestApp
                 // it will fall back to DefaultSignInScheme if not set
                 //options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 
-                options.Scope.Add("offline_access");
-                options.Scope.Add($"{authOptions.Value.ApiIdentifier}/read_values");
-                options.SaveTokens = true;
+                // we don't want the middleware to redeem the authorization code
+                //options.Scope.Add("offline_access");
+                //options.Scope.Add($"{authOptions.Value.ApiIdentifier}/read_values");
+                //options.SaveTokens = true;
             });
         }
 
@@ -107,7 +112,7 @@ namespace TestApp
             });
         }
 
-        private static OpenIdConnectEvents CreateOpenIdConnectEventHandlers(B2CAuthenticationOptions authOptions, B2CPolicies policies)
+        private static OpenIdConnectEvents CreateOpenIdConnectEventHandlers(B2CAuthenticationOptions authOptions, B2CPolicies policies, IDistributedCache distributedCache)
         {
             return new OpenIdConnectEvents
             {
@@ -129,23 +134,28 @@ namespace TestApp
                                                    }
                                                },
                 OnRedirectToIdentityProviderForSignOut = context => SetIssuerAddressForSignOutAsync(context, policies.SignInOrSignUpPolicy),
-                //OnAuthorizationCodeReceived = async context =>
-                //                              {
-                //                                  try
-                //                                  {
-                //                                      var credential = new ClientCredential(authOptions.ClientId, authOptions.ClientSecret);
-                //                                      var authenticationContext = new AuthenticationContext(authOptions.Authority);
-                //                                      var result = await authenticationContext.AcquireTokenByAuthorizationCodeAsync(context.TokenEndpointRequest.Code,
-                //                                          new Uri(context.TokenEndpointRequest.RedirectUri, UriKind.RelativeOrAbsolute), credential,
-                //                                          new[] { authOptions.ClientId }, context.Principal.Claims.First(claim => claim.Type == Constants.AcrClaimType).Value);
-                                                      
-                //                                      context.HandleCodeRedemption(result.Token, result.Token);
-                //                                  }
-                //                                  catch
-                //                                  {
-                //                                      context.HandleResponse();
-                //                                  }
-                //                              },
+                OnAuthorizationCodeReceived = async context =>
+                                              {
+                                                  try
+                                                  {
+                                                      var userTokenCache = new DistributedTokenCache(distributedCache, context.Principal.FindFirst(Constants.ObjectIdClaimType).Value).GetMSALCache();
+                                                      var client = new ConfidentialClientApplication(authOptions.ClientId,
+                                                          authOptions.Authority,
+                                                          context.TokenEndpointRequest.RedirectUri,
+                                                          new ClientCredential(authOptions.ClientSecret),
+                                                          userTokenCache,
+                                                          null);
+
+                                                      var result = await client.AcquireTokenByAuthorizationCodeAsync(context.TokenEndpointRequest.Code,
+                                                          new[] { $"{authOptions.ApiIdentifier}/read_values" });
+
+                                                      context.HandleCodeRedemption(result.AccessToken, result.IdToken);
+                                                  }
+                                                  catch(Exception e)
+                                                  {
+                                                      context.HandleResponse();
+                                                  }
+                                              },
                 OnAuthenticationFailed = context =>
                 {
                     context.Fail(context.Exception);
