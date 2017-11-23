@@ -16,6 +16,7 @@ using TestApp.Proxy;
 using System.Linq;
 using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 
 namespace TestApp
 {
@@ -48,6 +49,8 @@ namespace TestApp
             var authOptions = serviceProvider.GetService<IOptions<B2CAuthenticationOptions>>();
             var b2cPolicies = serviceProvider.GetService<IOptions<B2CPolicies>>();
 
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
             services.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -72,8 +75,12 @@ namespace TestApp
                     NameClaimType = "name"
                 };
 
-                options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                // it will fall back to DefaultSignInScheme if not set
+                //options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+
                 options.Scope.Add("offline_access");
+                options.Scope.Add($"{authOptions.Value.ApiIdentifier}/read_values");
+                options.SaveTokens = true;
             });
         }
 
@@ -122,23 +129,23 @@ namespace TestApp
                                                    }
                                                },
                 OnRedirectToIdentityProviderForSignOut = context => SetIssuerAddressForSignOutAsync(context, policies.SignInOrSignUpPolicy),
-                OnAuthorizationCodeReceived = async context =>
-                                              {
-                                                  try
-                                                  {
-                                                      var credential = new ClientCredential(authOptions.ClientId, authOptions.ClientSecret);
-                                                      var authenticationContext = new AuthenticationContext(authOptions.Authority);
-                                                      var result = await authenticationContext.AcquireTokenByAuthorizationCodeAsync(context.TokenEndpointRequest.Code,
-                                                          new Uri(context.TokenEndpointRequest.RedirectUri, UriKind.RelativeOrAbsolute), credential,
-                                                          new[] { authOptions.ClientId }, context.Principal.Claims.First(claim => claim.Type == Constants.AcrClaimType).Value);
+                //OnAuthorizationCodeReceived = async context =>
+                //                              {
+                //                                  try
+                //                                  {
+                //                                      var credential = new ClientCredential(authOptions.ClientId, authOptions.ClientSecret);
+                //                                      var authenticationContext = new AuthenticationContext(authOptions.Authority);
+                //                                      var result = await authenticationContext.AcquireTokenByAuthorizationCodeAsync(context.TokenEndpointRequest.Code,
+                //                                          new Uri(context.TokenEndpointRequest.RedirectUri, UriKind.RelativeOrAbsolute), credential,
+                //                                          new[] { authOptions.ClientId }, context.Principal.Claims.First(claim => claim.Type == Constants.AcrClaimType).Value);
                                                       
-                                                      context.HandleCodeRedemption(result.Token, result.Token);
-                                                  }
-                                                  catch
-                                                  {
-                                                      context.HandleResponse();
-                                                  }
-                                              },
+                //                                      context.HandleCodeRedemption(result.Token, result.Token);
+                //                                  }
+                //                                  catch
+                //                                  {
+                //                                      context.HandleResponse();
+                //                                  }
+                //                              },
                 OnAuthenticationFailed = context =>
                 {
                     context.Fail(context.Exception);

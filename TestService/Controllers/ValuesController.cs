@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,6 +10,7 @@ namespace TestService.Controllers
     {
         // GET api/values
         [HttpGet]
+        [Authorize("ReadValuesPolicy")]
         public IEnumerable<string> Get()
         {
             return new string[] { "value1", "value2" };

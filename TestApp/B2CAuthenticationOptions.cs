@@ -1,4 +1,4 @@
-﻿namespace TestApp
+namespace TestApp
 {
     public class B2CAuthenticationOptions
     {
@@ -11,5 +11,6 @@
         public string ClientSecret { get; set; }
 
         public string PostLogoutRedirectUri { get; set; }
+        public string ApiIdentifier { get; set; }
     }
 }

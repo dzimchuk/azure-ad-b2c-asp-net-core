@@ -30,6 +30,9 @@ namespace TestService
                 });
 
             services.AddMvc();
+
+            services.AddAuthorization(options =>
+                options.AddPolicy("ReadValuesPolicy", config => config.RequireClaim("http://schemas.microsoft.com/identity/claims/scope", new[] { "read_values" })));
         }
 
         public void Configure(IApplicationBuilder app)

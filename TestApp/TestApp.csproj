@@ -34,6 +34,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.0.0" />
     <PackageReference Include="Microsoft.Experimental.IdentityModel.Clients.ActiveDirectory" Version="4.0.209160138-alpha" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="1.1.0-preview" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
