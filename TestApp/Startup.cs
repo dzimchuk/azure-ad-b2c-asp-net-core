@@ -1,23 +1,23 @@
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading;
+using System.Threading.Tasks;
 using TestApp.Infrastructure;
 using TestApp.Proxy;
-using System.Linq;
-using Microsoft.AspNetCore.Authentication;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Caching.Distributed;
-using System;
 
 namespace TestApp
 {
@@ -54,7 +54,8 @@ namespace TestApp
             var b2cPolicies = serviceProvider.GetService<IOptions<B2CPolicies>>();
 
             var distributedCache = serviceProvider.GetService<IDistributedCache>();
-
+            
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -79,7 +80,7 @@ namespace TestApp
                     NameClaimType = "name"
                 };
 
-                // it will fall back to DefaultSignInScheme if not set
+                // it will fall back on using DefaultSignInScheme if not set
                 //options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 
                 // we don't want the middleware to redeem the authorization code
