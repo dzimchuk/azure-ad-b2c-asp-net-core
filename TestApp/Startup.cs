@@ -54,6 +54,7 @@ namespace TestApp
             var b2cPolicies = serviceProvider.GetService<IOptions<B2CPolicies>>();
 
             var distributedCache = serviceProvider.GetService<IDistributedCache>();
+            services.AddSingleton(distributedCache);
             
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddAuthentication(options =>
@@ -83,9 +84,12 @@ namespace TestApp
                 // it will fall back on using DefaultSignInScheme if not set
                 //options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 
-                // we don't want the middleware to redeem the authorization code
-                //options.Scope.Add("offline_access");
-                //options.Scope.Add($"{authOptions.Value.ApiIdentifier}/read_values");
+                // we have to set these scope that will be used in /authorize request
+                // (otherwise the /token request will not return access and refresh tokens)
+                options.Scope.Add("offline_access");
+                options.Scope.Add($"{authOptions.Value.ApiIdentifier}/read_values");
+
+                // this can be used if the middleware redeems the authorization code
                 //options.SaveTokens = true;
             });
         }
@@ -141,7 +145,7 @@ namespace TestApp
                                                   {
                                                       var userTokenCache = new DistributedTokenCache(distributedCache, context.Principal.FindFirst(Constants.ObjectIdClaimType).Value).GetMSALCache();
                                                       var client = new ConfidentialClientApplication(authOptions.ClientId,
-                                                          authOptions.Authority,
+                                                          authOptions.GetAuthority(policies.SignInOrSignUpPolicy),
                                                           context.TokenEndpointRequest.RedirectUri,
                                                           new ClientCredential(authOptions.ClientSecret),
                                                           userTokenCache,

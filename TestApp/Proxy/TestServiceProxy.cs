@@ -14,15 +14,20 @@ namespace TestApp.Proxy
     public class TestServiceProxy
     {
         private readonly B2CAuthenticationOptions authOptions;
+        private readonly B2CPolicies policies;
         private readonly TestServiceOptions serviceOptions;
 
         private readonly IHttpContextAccessor httpContextAccessor;
         private readonly IDistributedCache distributedCache;
 
-        public TestServiceProxy(IOptions<B2CAuthenticationOptions> authOptions, IOptions<TestServiceOptions> serviceOptions, 
-            IHttpContextAccessor httpContextAccessor, IDistributedCache distributedCache)
+        public TestServiceProxy(IOptions<B2CAuthenticationOptions> authOptions,
+            IOptions<B2CPolicies> policies,
+            IOptions<TestServiceOptions> serviceOptions, 
+            IHttpContextAccessor httpContextAccessor, 
+            IDistributedCache distributedCache)
         {
             this.authOptions = authOptions.Value;
+            this.policies = policies.Value;
             this.serviceOptions = serviceOptions.Value;
             this.httpContextAccessor = httpContextAccessor;
             this.distributedCache = distributedCache;
@@ -50,7 +55,7 @@ namespace TestApp.Proxy
             {
                 var tokenCache = new DistributedTokenCache(distributedCache, httpContextAccessor.HttpContext.User.FindFirst(Constants.ObjectIdClaimType).Value).GetMSALCache();
                 var client = new ConfidentialClientApplication(authOptions.ClientId,
-                                                          authOptions.Authority,
+                                                          authOptions.GetAuthority(policies.SignInOrSignUpPolicy),
                                                           "https://localhost:44397/",
                                                           new ClientCredential(authOptions.ClientSecret),
                                                           tokenCache,
