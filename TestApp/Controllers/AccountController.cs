@@ -46,6 +46,16 @@ namespace TestApp.Controllers
             return RedirectHome();
         }
 
+        public IActionResult ResetPassword()
+        {
+            return new ChallengeResult(
+                    Constants.OpenIdConnectAuthenticationScheme,
+                    new AuthenticationProperties(new Dictionary<string, string> { { Constants.B2CPolicy, policies.ResetPasswordPolicy } })
+                    {
+                        RedirectUri = "/"
+                    });
+        }
+
         public async Task<IActionResult> SignOut()
         {
             if (User.Identity.IsAuthenticated)

@@ -1,6 +1,6 @@
 # azure-ad-b2c-asp-net-core
 
-A sample demonstrating how you can configure your ASP.NET Core 2.0 applications to take advantage of [Azure AD B2C](https://azure.microsoft.com/en-us/services/active-directory-b2c/) to perform such tasks as:
+A sample demonstrating how you can configure your ASP.NET Core 2.0 applications to take advantage of [Azure AD B2C](https://azure.microsoft.com/en-us/services/active-directory-b2c/) and [MSAL](https://github.com/AzureAD/microsoft-authentication-library-for-dotnet) to perform such tasks as:
 - Authenticate users
 - Protect Web APIs
 - Redeem authorization code
@@ -25,7 +25,8 @@ You may also want to check [this](https://dzimchuk.net/azure-ad-b2c-user-profile
       "ApiIdentifier": "https://<tenant name>.onmicrosoft.com/testapi",
       "B2C": {
         "SignInOrSignUpPolicy": "e.g B2C_1_TestSignUpAndSignInPolicy",
-        "EditProfilePolicy": "e.g B2C_1_TestProfileEditPolicy"
+        "EditProfilePolicy": "e.g B2C_1_TestProfileEditPolicy",
+        "ResetPasswordPolicy": "e.g. B2C_1_TestPasswordReset"
       }
     }
   },
