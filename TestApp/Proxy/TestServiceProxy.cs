@@ -53,10 +53,12 @@ namespace TestApp.Proxy
         {
             try
             {
-                var tokenCache = new DistributedTokenCache(distributedCache, httpContextAccessor.HttpContext.User.FindFirst(Constants.ObjectIdClaimType).Value).GetMSALCache();
+                var principal = httpContextAccessor.HttpContext.User;
+
+                var tokenCache = new DistributedTokenCache(distributedCache, principal.FindFirst(Constants.ObjectIdClaimType).Value).GetMSALCache();
                 var client = new ConfidentialClientApplication(authOptions.ClientId,
-                                                          authOptions.GetAuthority(policies.SignInOrSignUpPolicy),
-                                                          "https://localhost:44397/",
+                                                          authOptions.GetAuthority(principal.FindFirst(Constants.AcrClaimType).Value),
+                                                          "https://app", // it's not really needed
                                                           new ClientCredential(authOptions.ClientSecret),
                                                           tokenCache,
                                                           null);

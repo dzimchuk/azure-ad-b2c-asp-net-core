@@ -143,10 +143,12 @@ namespace TestApp
                                               {
                                                   try
                                                   {
-                                                      var userTokenCache = new DistributedTokenCache(distributedCache, context.Principal.FindFirst(Constants.ObjectIdClaimType).Value).GetMSALCache();
+                                                      var principal = context.Principal;
+
+                                                      var userTokenCache = new DistributedTokenCache(distributedCache, principal.FindFirst(Constants.ObjectIdClaimType).Value).GetMSALCache();
                                                       var client = new ConfidentialClientApplication(authOptions.ClientId,
-                                                          authOptions.GetAuthority(policies.SignInOrSignUpPolicy),
-                                                          context.TokenEndpointRequest.RedirectUri,
+                                                          authOptions.GetAuthority(principal.FindFirst(Constants.AcrClaimType).Value),
+                                                          "https://app", // it's not really needed
                                                           new ClientCredential(authOptions.ClientSecret),
                                                           userTokenCache,
                                                           null);
@@ -156,9 +158,9 @@ namespace TestApp
 
                                                       context.HandleCodeRedemption(result.AccessToken, result.IdToken);
                                                   }
-                                                  catch(Exception e)
+                                                  catch (Exception ex)
                                                   {
-                                                      context.HandleResponse();
+                                                      context.Fail(ex);
                                                   }
                                               },
                 OnAuthenticationFailed = context =>
@@ -208,12 +210,12 @@ namespace TestApp
             context.ProtocolMessage.IssuerAddress = configuration.EndSessionEndpoint;
         }
 
-        private static async Task<OpenIdConnectConfiguration> GetOpenIdConnectConfigurationAsync(RedirectContext context, string defaultPolicy)
+        private static Task<OpenIdConnectConfiguration> GetOpenIdConnectConfigurationAsync(RedirectContext context, string defaultPolicy)
         {
             var manager = (PolicyConfigurationManager)context.Options.ConfigurationManager;
             var policy = context.Properties.Items.ContainsKey(Constants.B2CPolicy) ? context.Properties.Items[Constants.B2CPolicy] : defaultPolicy;
-            var configuration = await manager.GetConfigurationByPolicyAsync(CancellationToken.None, policy);
-            return configuration;
+
+            return manager.GetConfigurationByPolicyAsync(CancellationToken.None, policy);
         }
     }
 }
