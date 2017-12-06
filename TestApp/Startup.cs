@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
@@ -12,8 +11,6 @@ using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using System;
-using System.Linq;
-using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using TestApp.Infrastructure;
@@ -121,23 +118,7 @@ namespace TestApp
         {
             return new OpenIdConnectEvents
             {
-                OnRedirectToIdentityProvider = async context => 
-                                               {
-                                                   await SetIssuerAddressAsync(context, policies.SignInOrSignUpPolicy);
-
-                                                   if (IsProfileEditingRequest(context.Properties, policies))
-                                                   {
-                                                       var identity = (ClaimsIdentity)context.HttpContext.User.Identity;
-                                                       var identityLite = new IdentityLite
-                                                       {
-                                                           AuthenticationType = identity.AuthenticationType,
-                                                           NameClaimType = identity.NameClaimType,
-                                                           RoleClaimType = identity.RoleClaimType,
-                                                           Claims = context.HttpContext.User.Claims.Select(claim => new ClaimLite { Type = claim.Type, Value = claim.Value })
-                                                       };
-                                                       context.Properties.Items.Add(Constants.IdentityKey,  identityLite.ToString());
-                                                   }
-                                               },
+                OnRedirectToIdentityProvider = context => SetIssuerAddressAsync(context, policies.SignInOrSignUpPolicy),
                 OnRedirectToIdentityProviderForSignOut = context => SetIssuerAddressForSignOutAsync(context, policies.SignInOrSignUpPolicy),
                 OnAuthorizationCodeReceived = async context =>
                                               {
@@ -173,41 +154,21 @@ namespace TestApp
                     if (!string.IsNullOrEmpty(context.ProtocolMessage.Error) &&
                         !string.IsNullOrEmpty(context.ProtocolMessage.ErrorDescription))
                     {
-                        if (context.ProtocolMessage.ErrorDescription.StartsWith("AADB2C90091") &&
-                            IsProfileEditingRequest(context.Properties, policies))
+                        if (context.ProtocolMessage.ErrorDescription.StartsWith("AADB2C90091")) // cancel profile editing
                         {
-                            HandleProfileEditingCancellation(context); 
+                            context.HandleResponse();
+                            context.Response.Redirect("/");
                         }
-                        else if (context.ProtocolMessage.ErrorDescription.StartsWith("AADB2C90118"))
+                        else if (context.ProtocolMessage.ErrorDescription.StartsWith("AADB2C90118")) // forgot password
                         {
-                            HandlePasswordReset(context);
+                            context.HandleResponse();
+                            context.Response.Redirect("/Account/ResetPassword");
                         }
                     }
 
                     return Task.FromResult(0);
                 }
             };
-        }
-
-        private static void HandleProfileEditingCancellation(MessageReceivedContext context)
-        {
-            var identityLite = IdentityLite.FromString(context.Properties.Items[Constants.IdentityKey]);
-            var identity = new ClaimsIdentity(identityLite.Claims.Select(claim => new Claim(claim.Type, claim.Value)),
-                identityLite.AuthenticationType, identityLite.NameClaimType, identityLite.RoleClaimType);
-
-            context.Principal = new ClaimsPrincipal(identity);
-            context.Success();
-        }
-
-        private static void HandlePasswordReset(MessageReceivedContext context)
-        {
-            context.HandleResponse();
-            context.Response.Redirect("/Account/ResetPassword");
-        }
-
-        private static bool IsProfileEditingRequest(AuthenticationProperties properties, B2CPolicies policies)
-        {
-            return properties.Items.ContainsKey(Constants.B2CPolicy) && properties.Items[Constants.B2CPolicy] == policies.EditProfilePolicy;
         }
 
         private static async Task SetIssuerAddressAsync(RedirectContext context, string defaultPolicy)
