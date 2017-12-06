@@ -71,7 +71,7 @@ namespace TestApp
                 options.SignedOutRedirectUri = authOptions.Value.PostLogoutRedirectUri;
 
                 options.ConfigurationManager = new PolicyConfigurationManager(authOptions.Value.Authority,
-                                               new[] { b2cPolicies.Value.SignInOrSignUpPolicy, b2cPolicies.Value.EditProfilePolicy });
+                                               new[] { b2cPolicies.Value.SignInOrSignUpPolicy, b2cPolicies.Value.EditProfilePolicy, b2cPolicies.Value.ResetPasswordPolicy });
 
                 options.Events = CreateOpenIdConnectEventHandlers(authOptions.Value, b2cPolicies.Value, distributedCache);
 
@@ -170,27 +170,39 @@ namespace TestApp
                 },
                 OnMessageReceived = context =>
                 {
-                    HandleProfileEditingCancellation(policies, context);
+                    if (!string.IsNullOrEmpty(context.ProtocolMessage.Error) &&
+                        !string.IsNullOrEmpty(context.ProtocolMessage.ErrorDescription))
+                    {
+                        if (context.ProtocolMessage.ErrorDescription.StartsWith("AADB2C90091") &&
+                            IsProfileEditingRequest(context.Properties, policies))
+                        {
+                            HandleProfileEditingCancellation(context); 
+                        }
+                        else if (context.ProtocolMessage.ErrorDescription.StartsWith("AADB2C90118"))
+                        {
+                            HandlePasswordReset(context);
+                        }
+                    }
 
                     return Task.FromResult(0);
                 }
             };
         }
 
-        private static void HandleProfileEditingCancellation(B2CPolicies policies, MessageReceivedContext context)
+        private static void HandleProfileEditingCancellation(MessageReceivedContext context)
         {
-            if (!string.IsNullOrEmpty(context.ProtocolMessage.Error) &&
-                                    !string.IsNullOrEmpty(context.ProtocolMessage.ErrorDescription) &&
-                                    context.ProtocolMessage.ErrorDescription.StartsWith("AADB2C90091") &&
-                                    IsProfileEditingRequest(context.Properties, policies))
-            {
-                var identityLite = IdentityLite.FromString(context.Properties.Items[Constants.IdentityKey]);
-                var identity = new ClaimsIdentity(identityLite.Claims.Select(claim => new Claim(claim.Type, claim.Value)), 
-                    identityLite.AuthenticationType, identityLite.NameClaimType, identityLite.RoleClaimType);
+            var identityLite = IdentityLite.FromString(context.Properties.Items[Constants.IdentityKey]);
+            var identity = new ClaimsIdentity(identityLite.Claims.Select(claim => new Claim(claim.Type, claim.Value)),
+                identityLite.AuthenticationType, identityLite.NameClaimType, identityLite.RoleClaimType);
 
-                context.Principal = new ClaimsPrincipal(identity);
-                context.Success();
-            }
+            context.Principal = new ClaimsPrincipal(identity);
+            context.Success();
+        }
+
+        private static void HandlePasswordReset(MessageReceivedContext context)
+        {
+            context.HandleResponse();
+            context.Response.Redirect("/Account/ResetPassword");
         }
 
         private static bool IsProfileEditingRequest(AuthenticationProperties properties, B2CPolicies policies)
