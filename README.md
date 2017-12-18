@@ -7,8 +7,7 @@ A sample demonstrating how you can configure your ASP.NET Core 2.0 applications 
 - Call a protected Web API
 
 Please find more information in this walk-through post:
-[Setting up your ASP.NET Core apps and services for Azure AD B2C](https://dzimchuk.net/setting-up-your-aspnet-core-apps-and-services-for-azure-ad-b2c/)
-You may also want to check [this](https://dzimchuk.net/azure-ad-b2c-user-profile-editing-issues-with-asp-net-core/) post describing issues with user profile editing.
+[Setting up your ASP.NET Core 2.0 apps and services for Azure AD B2C](https://dzimchuk.net/setting-up-your-asp-net-core-2-0-apps-and-services-for-azure-ad-b2c/)
 
 # Configuration
 
