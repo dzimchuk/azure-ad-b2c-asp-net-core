@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -35,7 +36,7 @@ namespace TestApp
             services.Configure<TestServiceOptions>(configuration.GetSection("TestServiceOptions"));
             services.AddTransient<TestServiceProxy>();
 
-            services.AddMvc(options => options.Filters.Add(typeof(ReauthenticationRequiredFilter)));
+            services.AddControllersWithViews(options => options.Filters.Add(typeof(ReauthenticationRequiredFilter)));
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddDistributedMemoryCache();
@@ -91,12 +92,11 @@ namespace TestApp
             });
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseBrowserLink();
             }
             else
             {
@@ -104,13 +104,17 @@ namespace TestApp
             }
 
             app.UseStaticFiles();
-            
+
+            app.UseRouting();
+
             app.UseAuthentication();
-            app.UseMvc(routes =>
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
             });
         }
 

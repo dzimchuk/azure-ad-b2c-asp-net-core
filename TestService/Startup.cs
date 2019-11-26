@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace TestService
 {
@@ -17,19 +16,16 @@ namespace TestService
         
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<AuthenticationOptions>(configuration.GetSection("Authentication:AzureAd"));
-
-            var serviceProvider = services.BuildServiceProvider();
-            var authOptions = serviceProvider.GetService<IOptions<AuthenticationOptions>>();
+            var authOptions = configuration.GetSection("Authentication:AzureAd").Get<AuthenticationOptions>();
             
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme) // sets both authenticate and challenge default schemes
                 .AddJwtBearer(options =>
                 {
-                    options.MetadataAddress = $"{authOptions.Value.Authority}/.well-known/openid-configuration?p={authOptions.Value.SignInOrSignUpPolicy}";
-                    options.Audience = authOptions.Value.Audience;
+                    options.MetadataAddress = $"{authOptions.Authority}/.well-known/openid-configuration?p={authOptions.SignInOrSignUpPolicy}";
+                    options.Audience = authOptions.Audience;
                 });
 
-            services.AddMvc();
+            services.AddControllers();
 
             services.AddAuthorization(options =>
                 options.AddPolicy("ReadValuesPolicy", config => config.RequireClaim("http://schemas.microsoft.com/identity/claims/scope", new[] { "read_values" })));
@@ -37,8 +33,15 @@ namespace TestService
 
         public void Configure(IApplicationBuilder app)
         {
+            app.UseRouting();
+
             app.UseAuthentication();
-            app.UseMvc();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }

@@ -63,8 +63,10 @@ namespace TestApp.Proxy
                                                           tokenCache,
                                                           null);
 
+                var account = (await client.GetAccountsAsync()).FirstOrDefault();
+
                 var result = await client.AcquireTokenSilentAsync(new[] { $"{authOptions.ApiIdentifier}/read_values" },
-                    client.Users.FirstOrDefault());
+                    account);
 
                 return result.AccessToken;
             }

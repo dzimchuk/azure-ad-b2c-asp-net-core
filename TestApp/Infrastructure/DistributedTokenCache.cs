@@ -33,7 +33,7 @@ namespace TestApp.Infrastructure
 
         private void OnAfterAccess(TokenCacheNotificationArgs args)
         {
-            if (tokenCache.HasStateChanged)
+            if (args.HasStateChanged)
             {
                 var cacheOptions = new DistributedCacheEntryOptions
                 {
@@ -41,8 +41,6 @@ namespace TestApp.Infrastructure
                 };
 
                 distributedCache.Set(CacheKey, tokenCache.Serialize(), cacheOptions);
-
-                tokenCache.HasStateChanged = false;
             }
         }
 
