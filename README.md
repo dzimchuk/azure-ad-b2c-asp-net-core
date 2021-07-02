@@ -1,6 +1,6 @@
 # azure-ad-b2c-asp-net-core
 
-A sample demonstrating how you can configure your ASP.NET Core 5.0 applications to take advantage of [Azure AD B2C](https://azure.microsoft.com/en-us/services/active-directory-b2c/) and [MSAL](https://github.com/AzureAD/microsoft-authentication-library-for-dotnet) to perform such tasks as:
+A sample demonstrating how you can configure your ASP.NET Core 5.0 applications to take advantage of [Azure AD B2C](https://azure.microsoft.com/en-us/services/active-directory-b2c/), [Microsoft Identity Web](https://github.com/AzureAD/microsoft-identity-web) and [MSAL](https://github.com/AzureAD/microsoft-authentication-library-for-dotnet) to perform such tasks as:
 - Authenticate users
 - Protect Web APIs
 - Redeem authorization code
@@ -21,34 +21,34 @@ More documentation:
 
 ```
 "Authentication": {
-    "AzureAd": {
-      "Instance": "e.g. https://login.microsoftonline.com/",
-      "TenantId": "e.g. <your domain>.onmicrosoft.com>",
-      "ClientId": "",
-      "ClientSecret": "",
-      "PostLogoutRedirectUri": "https://localhost:44397/",
-      "ApiIdentifier": "https://<tenant name>.onmicrosoft.com/testapi",
-      "B2C": {
-        "SignInOrSignUpPolicy": "e.g B2C_1_TestSignUpAndSignInPolicy",
-        "EditProfilePolicy": "e.g B2C_1_TestProfileEditPolicy",
-        "ResetPasswordPolicy": "e.g. B2C_1_TestPasswordReset"
-      }
+    "AzureAdB2C": {
+      "Instance": "https://{your-tenant-name}.b2clogin.com",
+      "Domain": "<your-tenant-name>.onmicrosoft.com",
+      "ClientId": "<client id>",
+      "CallbackPath": "/signin-oidc",
+      "SignedOutCallbackPath": "/signout/B2C_1_SignUpAndSignIn",
+      "SignUpSignInPolicyId": "B2C_1_SignUpAndSignIn",
+      "ResetPasswordPolicyId": "B2C_1_PasswordReset",
+      "EditProfilePolicyId": "B2C_1_ProfileEdit",
+      // To call an API
+      "ClientSecret": "[client secret]"
     }
   },
-  "TestServiceOptions": {
-    "BaseUrl": "https://localhost:44359/"
-  } 
+  "TestService": {
+    "BaseUrl": "https://localhost:5001",
+    "Scopes": "e.g. https://{your-tenant-name}.onmicrosoft.com/testapi/read_values"
+  }
 ```
 
 ## TestService
 
 ```
 "Authentication": {
-    "AzureAd": {
-      "Instance": "e.g. https://login.microsoftonline.com/",
-      "TenantId": "e.g. <your domain>.onmicrosoft.com>",
-      "Audience": "Use client Id of the common app",
-      "SignInOrSignUpPolicy": "e.g B2C_1_TestSignUpAndSignInPolicy"
+    "AzureAdB2C": {
+      "Instance": "https://{your-tenant-name}.b2clogin.com",
+      "Domain": "<your-tenant-name>.onmicrosoft.com",
+      "ClientId": "<client id>",
+      "SignUpSignInPolicyId": "B2C_1_SignUpAndSignIn"
     }
   }
 ```
