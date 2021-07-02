@@ -1,0 +1,50 @@
+﻿@model IEnumerable<WeatherForecast>
+
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Test";
+}
+<h2>@ViewData["Title"].</h2>
+<h3>@ViewData["Message"]</h3>
+
+<p>Use this area to provide additional information.</p>
+
+<table class="table-hover claim-table">
+    <tr>
+        <th class="claim-type claim-data claim-head">Claim Type</th>
+        <th class="claim-data claim-head">Claim Value</th>
+    </tr>
+
+    @foreach (Claim claim in User.Claims)
+    {
+        <tr>
+            <td class="claim-type claim-data">@claim.Type</td>
+            <td class="claim-data">@claim.Value</td>
+        </tr>
+    }
+</table>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Temp. (C)</th>
+            <th>Temp. (F)</th>
+            <th>Summary</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null)
+        {
+            @foreach (var forecast in Model)
+            {
+                <tr>
+                    <td>@forecast.Date.ToShortDateString()</td>
+                    <td>@forecast.TemperatureC</td>
+                    <td>@forecast.TemperatureF</td>
+                    <td>@forecast.Summary</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

@@ -1,6 +1,8 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using TestApp.Models;
 using TestApp.Proxy;
 
 namespace TestApp.Controllers
@@ -20,24 +22,19 @@ namespace TestApp.Controllers
         }
 
         [Authorize]
-        public async Task<IActionResult> About()
+        public async Task<IActionResult> Test()
         {
             ViewData["Message"] = $"Hello {User.Identity.Name}!";
-            ViewData["Values"] = await testService.GetValuesAsync();
+            var forecast = await testService.GetWeatherForecastAsync();
 
-            return View();
-        }
-        
-        public IActionResult Contact()
-        {
-            ViewData["Message"] = "Contact";
-
-            return View();
+            return View(forecast);
         }
 
+        [AllowAnonymous]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View();
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
 }

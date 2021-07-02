@@ -1,38 +1,51 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Identity.Web;
 
 namespace TestService
 {
     public class Startup
     {
-        private readonly IConfiguration configuration;
-
         public Startup(IConfiguration configuration)
         {
-            this.configuration = configuration;
+            Configuration = configuration;
         }
-        
+
+        public IConfiguration Configuration { get; }
+
         public void ConfigureServices(IServiceCollection services)
         {
-            var authOptions = configuration.GetSection("Authentication:AzureAd").Get<AuthenticationOptions>();
-            
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme) // sets both authenticate and challenge default schemes
-                .AddJwtBearer(options =>
+            // This is required to be instantiated before the OpenIdConnectOptions starts getting configured.
+            // By default, the claims mapping will map claim names in the old format to accommodate older SAML applications.
+            // 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role' instead of 'roles'
+            // This flag ensures that the ClaimsIdentity claims collection will be built from the claims in the token
+            // JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddMicrosoftIdentityWebApi(options =>
                 {
-                    options.MetadataAddress = $"{authOptions.Authority}/.well-known/openid-configuration?p={authOptions.SignInOrSignUpPolicy}";
-                    options.Audience = authOptions.Audience;
-                });
+                    Configuration.Bind("AzureAdB2C", options);
+
+                    options.TokenValidationParameters.NameClaimType = "name";
+                },
+                options => { Configuration.Bind("AzureAdB2C", options); });
 
             services.AddControllers();
-
-            services.AddAuthorization(options =>
-                options.AddPolicy("ReadValuesPolicy", config => config.RequireClaim("http://schemas.microsoft.com/identity/claims/scope", new[] { "read_values" })));
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+
+            app.UseHttpsRedirection();
+
             app.UseRouting();
 
             app.UseAuthentication();

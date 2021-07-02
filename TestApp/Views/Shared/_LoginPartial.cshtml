@@ -1,13 +1,22 @@
-﻿@if (User.Identity.IsAuthenticated)
-{
-    <ul class="nav navbar-nav navbar-right">
-        <li class="navbar-link"><a asp-controller="Account" asp-action="Profile">@User.Identity.Name</a></li>
-        <li class="navbar-link"><a asp-controller="Account" asp-action="SignOut">Sign Out</a></li>
-    </ul>
-}
-else
-{
-    <ul class="nav navbar-nav navbar-right">
-        <li><a asp-controller="Account" asp-action="SignIn">Sign in</a></li>
-    </ul>
-}
+﻿@using System.Security.Principal
+
+<ul class="navbar-nav">
+    @if (User.Identity.IsAuthenticated)
+    {
+        <li class="nav-item">
+            <span class="navbar-text text-dark">Hello @User.Identity.Name!</span>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="EditProfile">Edit Profile</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign in</a>
+        </li>
+    }
+</ul>

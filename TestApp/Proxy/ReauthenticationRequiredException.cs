@@ -1,6 +1,6 @@
 using System;
 
-namespace TestApp.Infrastructure
+namespace TestApp.Proxy
 {
     internal class ReauthenticationRequiredException : Exception
     {

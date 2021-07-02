@@ -1,74 +1,56 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Identity.Client;
+using Microsoft.Identity.Web;
+using Newtonsoft.Json;
 using System;
-using System.Linq;
+using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using TestApp.Infrastructure;
+using TestApp.Models;
 
 namespace TestApp.Proxy
 {
     public class TestServiceProxy
     {
-        private readonly B2CAuthenticationOptions authOptions;
-        private readonly B2CPolicies policies;
-        private readonly TestServiceOptions serviceOptions;
+        private readonly ITokenAcquisition tokenAcquisition;
 
-        private readonly IHttpContextAccessor httpContextAccessor;
-        private readonly IDistributedCache distributedCache;
+        private readonly string baseUrl;
+        private readonly string[] scopes;
 
-        public TestServiceProxy(IOptions<B2CAuthenticationOptions> authOptions,
-            IOptions<B2CPolicies> policies,
-            IOptions<TestServiceOptions> serviceOptions, 
-            IHttpContextAccessor httpContextAccessor, 
-            IDistributedCache distributedCache)
+        public TestServiceProxy(ITokenAcquisition tokenAcquisition, IConfiguration configuration)
         {
-            this.authOptions = authOptions.Value;
-            this.policies = policies.Value;
-            this.serviceOptions = serviceOptions.Value;
-            this.httpContextAccessor = httpContextAccessor;
-            this.distributedCache = distributedCache;
+            this.tokenAcquisition = tokenAcquisition;
+
+            baseUrl = configuration.GetValue<string>("TestService:BaseUrl");
+            scopes = configuration.GetValue<string>("TestService:Scopes")?.Split(' ');
         }
 
-        public async Task<string> GetValuesAsync()
+        public async Task<IEnumerable<WeatherForecast>> GetWeatherForecastAsync()
         {
-            var client = new HttpClient { BaseAddress = new Uri(serviceOptions.BaseUrl, UriKind.Absolute) };
+            var client = new HttpClient { BaseAddress = new Uri(baseUrl, UriKind.Absolute) };
             client.DefaultRequestHeaders.Authorization = 
                 new AuthenticationHeaderValue("Bearer", await GetAccessTokenAsync());
 
-            return await client.GetStringAsync("api/values");
+            var response = await client.GetAsync("WeatherForecast");
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var forcast = JsonConvert.DeserializeObject<IEnumerable<WeatherForecast>>(content);
+                return forcast;
+            }
+
+            return null;
         }
 
-        // this is how you get tokens obtained by the OIDC middleware
-        //private Task<string> GetAccessTokenAsync()
-        //{
-        //    return httpContextAccessor.HttpContext.GetTokenAsync("access_token");
-        //}
-
-        // this is how you get tokens with MSAL
         private async Task<string> GetAccessTokenAsync()
         {
             try
             {
-                var principal = httpContextAccessor.HttpContext.User;
-
-                var tokenCache = new DistributedTokenCache(distributedCache, principal.FindFirst(Constants.ObjectIdClaimType).Value).GetMSALCache();
-                var client = new ConfidentialClientApplication(authOptions.ClientId,
-                                                          authOptions.GetAuthority(principal.FindFirst(Constants.AcrClaimType).Value),
-                                                          "https://app", // it's not really needed
-                                                          new ClientCredential(authOptions.ClientSecret),
-                                                          tokenCache,
-                                                          null);
-
-                var account = (await client.GetAccountsAsync()).FirstOrDefault();
-
-                var result = await client.AcquireTokenSilentAsync(new[] { $"{authOptions.ApiIdentifier}/read_values" },
-                    account);
-
-                return result.AccessToken;
+                return await tokenAcquisition.GetAccessTokenForUserAsync(scopes);
             }
             catch (MsalUiRequiredException)
             {
