@@ -40,7 +40,9 @@ namespace TestApp
             services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
                 .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAdB2C"))
                 .EnableTokenAcquisitionToCallDownstreamApi(new string[] { Configuration["TestService:Scopes"] })
-                .AddInMemoryTokenCaches();
+                .AddDistributedTokenCaches();
+
+            services.AddDistributedMemoryCache(); // for other options see https://github.com/AzureAD/microsoft-identity-web/wiki/token-cache-serialization
 
             services.AddRazorPages()
                  .AddMicrosoftIdentityUI();

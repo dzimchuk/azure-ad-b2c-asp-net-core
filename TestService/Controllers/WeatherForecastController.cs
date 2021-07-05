@@ -10,7 +10,7 @@ namespace TestService.Controllers
     [Authorize]
     [ApiController]
     [Route("[controller]")]
-    //[RequiredScope(scopeRequiredByApi)]
+    [RequiredScope(scopeRequiredByApi)]
     public class WeatherForecastController : ControllerBase
     {
         private static readonly string[] Summaries = new[]
@@ -19,12 +19,12 @@ namespace TestService.Controllers
         };
 
         // The Web API will only accept tokens 1) for users, and 2) having the "read_values" scope for this API
-        static readonly string[] scopeRequiredByApi = new string[] { "read_values" };
+        const string scopeRequiredByApi = "read_values";
 
         [HttpGet]
         public IEnumerable<WeatherForecast> Get()
         {
-            HttpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
+            //HttpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
             var rng = new Random();
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
