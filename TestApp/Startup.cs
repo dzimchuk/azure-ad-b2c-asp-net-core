@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
+using TestApp.Infrastructure;
 using TestApp.Proxy;
 
 namespace TestApp
@@ -45,7 +46,8 @@ namespace TestApp
             services.AddDistributedMemoryCache(); // for other options see https://github.com/AzureAD/microsoft-identity-web/wiki/token-cache-serialization
 
             services.AddRazorPages()
-                 .AddMicrosoftIdentityUI();
+                 .AddMicrosoftIdentityUI()
+                 .AddMvcOptions(options => options.Filters.Add(typeof(ReauthenticationRequiredFilter)));
 
             services.AddOptions();
             services.Configure<OpenIdConnectOptions>(Configuration.GetSection("AzureAdB2C"));
