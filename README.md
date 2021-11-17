@@ -1,6 +1,6 @@
 # azure-ad-b2c-asp-net-core
 
-A sample demonstrating how you can configure your ASP.NET Core 5.0 applications to take advantage of [Azure AD B2C](https://azure.microsoft.com/en-us/services/active-directory-b2c/), [Microsoft Identity Web](https://github.com/AzureAD/microsoft-identity-web) and [MSAL](https://github.com/AzureAD/microsoft-authentication-library-for-dotnet) to perform such tasks as:
+A sample demonstrating how you can configure your ASP.NET Core 6.0 applications to take advantage of [Azure AD B2C](https://azure.microsoft.com/en-us/services/active-directory-b2c/), [Microsoft Identity Web](https://github.com/AzureAD/microsoft-identity-web) and [MSAL](https://github.com/AzureAD/microsoft-authentication-library-for-dotnet) to perform such tasks as:
 - Authenticate users
 - Protect Web APIs
 - Redeem authorization code
