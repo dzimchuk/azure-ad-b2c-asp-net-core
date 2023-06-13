@@ -1,6 +1,6 @@
 # azure-ad-b2c-asp-net-core
 
-A sample demonstrating how you can configure your ASP.NET Core 6.0 applications to take advantage of [Azure AD B2C](https://azure.microsoft.com/en-us/services/active-directory-b2c/), [Microsoft Identity Web](https://github.com/AzureAD/microsoft-identity-web) and [MSAL](https://github.com/AzureAD/microsoft-authentication-library-for-dotnet) to perform such tasks as:
+A sample demonstrating how you can configure your ASP.NET Core 7.0 applications to take advantage of [Azure AD B2C](https://azure.microsoft.com/en-us/services/active-directory-b2c/), [Microsoft Identity Web](https://github.com/AzureAD/microsoft-identity-web) and [MSAL](https://github.com/AzureAD/microsoft-authentication-library-for-dotnet) to perform such tasks as:
 - Authenticate users
 - Protect Web APIs
 - Redeem authorization code
@@ -9,11 +9,12 @@ A sample demonstrating how you can configure your ASP.NET Core 6.0 applications 
 - Implement profile editing
 
 Please find more information in this walk-through post:
+[Create user flows](https://docs.microsoft.com/en-us/azure/active-directory-b2c/tutorial-create-user-flows?pivots=b2c-user-flow)
+
+This post describes how it used to be during .NET Core 2.0 days:
 [Setting up your ASP.NET Core 2.0 apps and services for Azure AD B2C](https://dzimchuk.net/setting-up-your-asp-net-core-2-0-apps-and-services-for-azure-ad-b2c/)
 
-More documentation:
-
-[Create user flows](https://docs.microsoft.com/en-us/azure/active-directory-b2c/tutorial-create-user-flows?pivots=b2c-user-flow)
+Most of the configurations and workarounds are handled by official packages now (for example, AADB2C90091 response on cancelling profile editing). However, it may give you more insights on why things are done in a certian way.
 
 # Configuration
 
